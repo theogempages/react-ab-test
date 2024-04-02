@@ -1,26 +1,39 @@
 // src/App.js
 import './App.css';
-import { useFeatureFlagEnabled, PostHogFeature, usePostHog, useFeatureFlagVariantKey } from 'posthog-js/react';
+
+import { Experiment, Variant, emitter, experimentDebugger } from '@marvelapp/react-ab-test'
+
+experimentDebugger.enable();
+
+emitter.addPlayListener("Theo-Test-AB", function(experimentName, variantName) {
+  // Perform any necessary operations to send experiment data to server or analytics provider.
+  console.log(`Displaying experiment ${experimentName} variant ${variantName}`);
+});
+
+emitter.addWinListener("Theo-Test-AB", function(experimentName, variantName) {
+  // Perform any necessary operations to send experiment data to server or analytics provider.
+  console.log(
+    `Variant ${variantName} of experiment ${experimentName} was clicked`
+  );
+});
 
 function App() {
-  
-  const posthog = usePostHog();
-
-  posthog.featureFlags.override('home-button-test', 'test')
-  const flagValue = useFeatureFlagVariantKey('home-button-test')
-
-  const handleClick = () => {
-    posthog.capture('button clicked');
-  };
+  function handleClick (e) {
+    emitter.emitWin('Theo-Test-AB');
+  }
 
   return (
     <div className="App">
-      <h1>We are testing this button:</h1>
-      {flagValue === 'test' ? (
-        <button onClick={handleClick}>Sign up for free!</button>
-      ) : (
-        <button onClick={handleClick}>Click me!</button>
-      )}
+      <Experiment name="Theo-Test-AB">
+        <Variant name='control'>
+          <button onClick={handleClick}>Original Button</button>
+        </Variant>
+        <Variant name='addl-info'>
+          <p>A/B testing is a way to compare two versions of a single variable typically by testing a subject's response to variable A against variable B, and determining which of the two variables is more effective.
+          </p>
+          <button onClick={handleClick}>Variant Button</button>
+        </Variant>
+      </Experiment>
     </div>
   );
 }
