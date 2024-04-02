@@ -1,23 +1,26 @@
-import logo from './logo.svg';
+// src/App.js
 import './App.css';
+import { useFeatureFlagEnabled, PostHogFeature, usePostHog, useFeatureFlagVariantKey } from 'posthog-js/react';
 
 function App() {
+  
+  const posthog = usePostHog();
+
+  posthog.featureFlags.override('home-button-test', 'test')
+  const flagValue = useFeatureFlagVariantKey('home-button-test')
+
+  const handleClick = () => {
+    posthog.capture('button clicked');
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h1>We are testing this button:</h1>
+      {flagValue === 'test' ? (
+        <button onClick={handleClick}>Sign up for free!</button>
+      ) : (
+        <button onClick={handleClick}>Click me!</button>
+      )}
     </div>
   );
 }
